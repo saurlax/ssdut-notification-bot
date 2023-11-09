@@ -56,8 +56,3 @@ async function main () {
 }
 
 setInterval(main, 5 * 60000)
-
-process.on('unhandledRejection', (reason, p) => {
-  console.log('Unhandled Rejection at:', p, 'reason:', reason)
-  send(`Unhandled Rejection at: ${p}, reason: ${reason}`)
-})
