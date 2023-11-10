@@ -10,8 +10,9 @@ async function update () {
   if (hour < 8 || hour > 22) return
   const news = (await ss()).concat(await eda())
   console.log(Date.now())
-  console.log(news)
-  if (news.length > 0) news.forEach(send)
+  if (news.length > 0) {
+    news.forEach(send)
+  }
 }
 
 console.log('started')

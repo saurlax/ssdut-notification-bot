@@ -1,49 +1,45 @@
-import { load } from 'cheerio'
 import { config } from 'dotenv'
+import { JSDOM } from 'jsdom'
 
 config()
 const size = parseInt(process.env.SIZE ?? 5)
-const ssbuffer = new Array(size).fill('')
+
+let ssbuffer = []
 
 export async function ss () {
   const news = []
   const res = await fetch('https://ss.dlut.edu.cn/index/bkstz.htm')
-  const html = await res.text()
-  const $ = load(html)
-  $('.c_hzjl_list1 ul li')
+  const doc = new JSDOM(await res.text()).window.document
+  ssbuffer = Array.from(doc.querySelectorAll('.c_hzjl_list1 ul li'))
     .slice(0, size)
-    .each(function () {
-      const a = $(this).find('a')
-      const href = a.attr('href').replace('..', 'https://ss.dlut.edu.cn')
-      const title = a.attr('title')
-      if (!ssbuffer.includes(href)) {
-        news.push(`${title}\n${href}`)
+    .map(li => li.querySelector('a'))
+    .map(a => {
+      if (!ssbuffer.includes(a.href)) {
+        news.push(
+          a.title + '\n' + a.href.replace('..', 'https://ss.dlut.edu.cn')
+        )
       }
-      ssbuffer.shift()
-      ssbuffer.push(href)
+      return a.href
     })
   return news
 }
 
-const edabuffer = new Array(size).fill('')
+let edabuffer = []
 
 export async function eda () {
   const news = []
   const res = await fetch('http://eda.dlut.edu.cn/tzgg/tzgg.htm')
-  const html = await res.text()
-  const $ = load(html)
-
-  $('.ny_list ul li')
+  const doc = new JSDOM(await res.text()).window.document
+  edabuffer = Array.from(doc.querySelectorAll('.ny_list ul li'))
     .slice(0, size)
-    .each(function () {
-      const a = $(this).find('a')
-      const href = a.attr('href').replace('..', 'http://eda.dlut.edu.cn')
-      const title = a.text()
-      if (!edabuffer.includes(href)) {
-        news.push(`${title}\n${href}`)
+    .map(li => li.querySelector('a'))
+    .map(a => {
+      if (!edabuffer.includes(a.href)) {
+        news.push(
+          a.textContent + '\n' + a.href.replace('..', 'http://eda.dlut.edu.cn')
+        )
       }
-      edabuffer.shift()
-      edabuffer.push(href)
+      return a.href
     })
   return news
 }
