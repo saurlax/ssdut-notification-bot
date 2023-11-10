@@ -3,7 +3,7 @@ import { eda, ss } from './fetcher.js'
 import { send } from './sender.js'
 
 config()
-const time = parseFloat(process.env.TIME) ?? 30
+const time = parseFloat(process.env.TIME ?? 30)
 
 async function update () {
   const hour = new Date().getUTCHours() + 8

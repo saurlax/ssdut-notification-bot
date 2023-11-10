@@ -2,7 +2,7 @@ import { load } from 'cheerio'
 import { config } from 'dotenv'
 
 config()
-const size = parseInt(process.env.SIZE) ?? 5
+const size = parseInt(process.env.SIZE ?? 5)
 const ssbuffer = new Array(size).fill('')
 
 export async function ss () {
