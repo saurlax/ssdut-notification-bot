@@ -3,43 +3,46 @@ import { JSDOM } from 'jsdom'
 
 config()
 const size = parseInt(process.env.SIZE ?? 5)
+const targets = [
+  {
+    url: 'https://ss.dlut.edu.cn/index/bkstz.htm',
+    selector: '.c_hzjl_list1 ul li',
+    title: a => a.title,
+    link: a => a.href.replace('..', 'https://ss.dlut.edu.cn'),
+    buffer: []
+  },
+  {
+    url: 'https://eda.dlut.edu.cn/tzgg/tzgg.htm',
+    selector: '.ny_list ul li',
+    title: a => a.textContent,
+    link: a => a.href.replace('..', 'https://eda.dlut.edu.cn'),
+    buffer: []
+  },
+  {
+    url: 'https://teach.dlut.edu.cn/byxx/byxx.htm',
+    selector: '.list ul li',
+    title: a => a.title,
+    link: a => a.href.replace('..', 'https://teach.dlut.edu.cn'),
+    buffer: []
+  }
+]
 
-let ssbuffer = []
-
-export async function ss () {
+export async function update () {
   const news = []
-  const res = await fetch('https://ss.dlut.edu.cn/index/bkstz.htm')
-  const doc = new JSDOM(await res.text()).window.document
-  ssbuffer = Array.from(doc.querySelectorAll('.c_hzjl_list1 ul li'))
-    .slice(0, size)
-    .map(li => li.querySelector('a'))
-    .map(a => {
-      if (!ssbuffer.includes(a.href)) {
-        news.push(
-          a.title + '\n' + a.href.replace('..', 'https://ss.dlut.edu.cn')
-        )
-      }
-      return a.href
-    })
-  return news
-}
-
-let edabuffer = []
-
-export async function eda () {
-  const news = []
-  const res = await fetch('http://eda.dlut.edu.cn/tzgg/tzgg.htm')
-  const doc = new JSDOM(await res.text()).window.document
-  edabuffer = Array.from(doc.querySelectorAll('.ny_list ul li'))
-    .slice(0, size)
-    .map(li => li.querySelector('a'))
-    .map(a => {
-      if (!edabuffer.includes(a.href)) {
-        news.push(
-          a.textContent + '\n' + a.href.replace('..', 'http://eda.dlut.edu.cn')
-        )
-      }
-      return a.href
-    })
+  for (const target of targets) {
+    const res = await fetch(target.url)
+    const doc = new JSDOM(await res.text()).window.document
+    target.buffer = Array.from(doc.querySelectorAll(target.selector))
+      .slice(0, size)
+      .map(li => li.querySelector('a'))
+      .map(a => {
+        const title = target.title(a)
+        const link = target.link(a)
+        if (!target.buffer.includes(link)) {
+          news.push(title + '\n' + link)
+        }
+        return link
+      })
+  }
   return news
 }
