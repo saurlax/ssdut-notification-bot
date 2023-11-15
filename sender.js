@@ -1,3 +1,6 @@
+import { config } from 'dotenv'
+
+config()
 export function send (data) {
   console.log(data)
   fetch(process.env.API, {

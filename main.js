@@ -1,24 +1,21 @@
-import { config } from 'dotenv'
 import { send } from './sender.js'
 import { update } from './fetcher.js'
-
-config()
-const time = parseFloat(process.env.TIME ?? 30)
-
-async function timer () {
-  const hour = new Date().getUTCHours() + 8
-  if (hour < 8 || hour > 22) return
-  const news = await update()
-  console.log(Date.now())
-  if (news.length > 0) {
-    news.forEach(send)
-  }
-}
+import { getData, setData } from './db.js'
 
 process.on('unhandledRejection', (reason, p) => {
   send(reason.stack)
 })
 
-send('started')
-update()
-setInterval(timer, time * 60000)
+process.on('uncaughtException', err => {
+  send(err.stack)
+})
+
+const data = await update()
+const old = getData()
+data
+  .filter(item => !old.includes(item.link))
+  .forEach(item => {
+    send(`${item.title}\n${item.link}`)
+  })
+setData(data.map(item => item.link))
+console.log('done')
